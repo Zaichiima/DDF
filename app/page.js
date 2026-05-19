@@ -250,6 +250,11 @@ export default function Page() {
           <input
             value={joinName}
             onChange={(e) => setJoinName(e.target.value)}
+            style={{
+  color: "white",
+  background: "#111",
+  border: "1px solid #333",
+}}
             placeholder="Dein Name"
           />
 
@@ -257,6 +262,11 @@ export default function Page() {
           <input
             value={joinCam}
             onChange={(e) => setJoinCam(e.target.value)}
+            style={{
+  color: "white",
+  background: "#111",
+  border: "1px solid #333",
+}}
             placeholder="https://vdo.ninja/?view=..."
           />
 
@@ -319,6 +329,11 @@ export default function Page() {
           <input
             value={data.timer}
             onChange={(e) => save({ ...data, timer: e.target.value })}
+            style={{
+  color: "white",
+  background: "#111",
+  border: "1px solid #333",
+}}
           />
 
           {data.players.map((p, i) => (
@@ -340,12 +355,22 @@ export default function Page() {
               <input
                 value={p.name}
                 onChange={(e) => updatePlayer(p.id, { name: e.target.value })}
+                style={{
+  color: "white",
+  background: "#111",
+  border: "1px solid #333",
+}}
               />
 
               <label>VDO.Ninja Link</label>
               <input
                 value={p.cam || ""}
                 onChange={(e) => updatePlayer(p.id, { cam: e.target.value })}
+                style={{
+  color: "white",
+  background: "#111",
+  border: "1px solid #333",
+}}
               />
 
               <label>Status</label>
