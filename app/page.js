@@ -292,164 +292,195 @@ export default function Page() {
         </section>
       )}
 
-      {mode === "host" && (
-        <div className="panel">
-          <h1 style={{ fontSize: 42, fontWeight: 900, marginBottom: 18 }}>
-            Stream Overlay
-          </h1>
+{mode === "host" && (
+  <section style={{ padding: 28, color: "white" }}>
+    <h1 style={{ fontSize: 52, fontWeight: 900, marginBottom: 20 }}>
+      Host Control Panel
+    </h1>
 
-          <button
-            onClick={addPlayer}
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "360px 1fr",
+        gap: 24,
+      }}
+    >
+      <div
+        style={{
+          background: "linear-gradient(145deg,#17172f,#0b0b18)",
+          borderRadius: 24,
+          padding: 20,
+          border: "1px solid rgba(255,255,255,.12)",
+        }}
+      >
+        <button
+          onClick={addPlayer}
+          style={{
+            width: "100%",
+            background: "linear-gradient(135deg,#a855f7,#ec4899)",
+            color: "white",
+            padding: 16,
+            fontSize: 18,
+            marginBottom: 16,
+          }}
+        >
+          + Spieler manuell hinzufügen
+        </button>
+
+        <label>Timer</label>
+        <input
+          value={data.timer}
+          onChange={(e) => save({ ...data, timer: e.target.value })}
+        />
+
+        <label>Host VDO.Ninja Link</label>
+        <input
+          value={data.hostCam || ""}
+          onChange={(e) => save({ ...data, hostCam: e.target.value })}
+          placeholder="Host Cam Link"
+        />
+
+        <button
+          onClick={() => save({ ...data, players: [] })}
+          style={{
+            width: "100%",
+            background: "#dc2626",
+            color: "white",
+            padding: 14,
+            fontSize: 16,
+            marginTop: 12,
+          }}
+        >
+          Alle Spieler löschen
+        </button>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, minmax(220px, 1fr))",
+          gap: 18,
+        }}
+      >
+        {data.players.slice(0, 9).map((p, i) => (
+          <div
+            key={p.id}
             style={{
-              width: "100%",
-              background: "linear-gradient(135deg,#a855f7,#ec4899)",
-              color: "white",
-              marginBottom: 16,
-              padding: 16,
-              fontSize: 18,
+              background: p.active
+                ? "linear-gradient(145deg,#123828,#181830)"
+                : "linear-gradient(145deg,#181830,#10101f)",
+              border: p.active
+                ? "2px solid #00ff95"
+                : "1px solid rgba(255,255,255,.12)",
+              borderRadius: 24,
+              padding: 18,
+              boxShadow: p.active
+                ? "0 0 35px rgba(0,255,149,.25)"
+                : "0 10px 30px rgba(0,0,0,.25)",
             }}
           >
-            + Spieler manuell hinzufügen
-          </button>
-          <button
-  onClick={() => save({ ...data, players: [] })}
-  style={{
-    width: "100%",
-    background: "#dc2626",
-    color: "white",
-    marginBottom: 16,
-    padding: 16,
-    fontSize: 18,
-  }}
->
-  Alle Spieler löschen
-</button>
+            <h2 style={{ fontSize: 28, fontWeight: 900, marginBottom: 12 }}>
+              Spieler {i + 1}
+            </h2>
 
-          <label>Timer</label>
-          <input
-            value={data.timer}
-            onChange={(e) => save({ ...data, timer: e.target.value })}
-            style={{
-  color: "white",
-  background: "#111",
-  border: "1px solid #333",
-}}
-          />
+            <label>Name</label>
+            <input
+              value={p.name}
+              onChange={(e) => updatePlayer(p.id, { name: e.target.value })}
+            />
 
-          <label>Zaichiima</label>
-          <input
-            value={data.hostCam}
-            onChange={(e) => save({ ...data, hostCam: e.target.value })}
-            style={{
-  color: "white",
-  background: "#111",
-  border: "1px solid #333",
-}}
-          />
+            <label>VDO.Ninja Link</label>
+            <input
+              value={p.cam || ""}
+              onChange={(e) => updatePlayer(p.id, { cam: e.target.value })}
+            />
 
-          {data.players.map((p, i) => (
+            <label>Status</label>
+            <select
+              value={p.status}
+              onChange={(e) => updatePlayer(p.id, { status: e.target.value })}
+            >
+              <option>Waiting</option>
+              <option>Talking</option>
+              <option>Thinking</option>
+              <option>Answering</option>
+              <option>AFK</option>
+              <option>Out</option>
+            </select>
+
+            <div style={{ fontSize: 24, fontWeight: 900, margin: "10px 0" }}>
+              ❤️ {p.lives} · 🗳️ {p.votes}
+            </div>
+
             <div
-              key={p.id}
               style={{
-                background: "#0b0b1a",
-                padding: 16,
-                borderRadius: 20,
-                marginTop: 16,
-                border: "1px solid rgba(255,255,255,.08)",
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 8,
+                marginBottom: 8,
               }}
             >
-              <h2 style={{ fontSize: 26, fontWeight: 900 }}>
-                Spieler {i + 1}
-              </h2>
-
-              <label>Name</label>
-              <input
-                value={p.name}
-                onChange={(e) => updatePlayer(p.id, { name: e.target.value })}
-                style={{
-  color: "white",
-  background: "#111",
-  border: "1px solid #333",
-}}
-              />
-
-              <label>VDO.Ninja Link</label>
-              <input
-                value={p.cam || ""}
-                onChange={(e) => updatePlayer(p.id, { cam: e.target.value })}
-                style={{
-  color: "white",
-  background: "#111",
-  border: "1px solid #333",
-}}
-              />
-
-              <label>Status</label>
-              <select
-                value={p.status}
-                onChange={(e) => updatePlayer(p.id, { status: e.target.value })}
-              >
-                <option>Waiting</option>
-                <option>Talking</option>
-                <option>Thinking</option>
-                <option>Answering</option>
-                <option>AFK</option>
-                <option>Out</option>
-              </select>
-
-              <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
-                <button
-                  style={{ background: "#ec4899", color: "white" }}
-                  onClick={() => updatePlayer(p.id, { lives: p.lives + 1 })}
-                >
-                  ❤️+
-                </button>
-                <button
-                  style={{ background: "#374151", color: "white" }}
-                  onClick={() =>
-                    updatePlayer(p.id, { lives: Math.max(0, p.lives - 1) })
-                  }
-                >
-                  ❤️-
-                </button>
-                <button
-                  style={{ background: "#06b6d4", color: "white" }}
-                  onClick={() => updatePlayer(p.id, { votes: p.votes + 1 })}
-                >
-                  Vote +
-                </button>
-                <button
-                  style={{ background: "#374151", color: "white" }}
-                  onClick={() =>
-                    updatePlayer(p.id, { votes: Math.max(0, p.votes - 1) })
-                  }
-                >
-                  Vote -
-                </button>
-              </div>
-
               <button
-                style={{
-                  width: "100%",
-                  background: p.active ? "#00ff95" : "#374151",
-                  color: "white",
-                  marginBottom: 10,
-                }}
-                onClick={() => updatePlayer(p.id, { active: !p.active })}
+                style={{ background: "#ec4899", color: "white" }}
+                onClick={() => updatePlayer(p.id, { lives: p.lives + 1 })}
               >
-                {p.active ? "Aktiv" : "Aktiv markieren"}
+                + Leben
               </button>
 
               <button
-                style={{ width: "100%", background: "#dc2626", color: "white" }}
-                onClick={() => removePlayer(p.id)}
+                style={{ background: "#374151", color: "white" }}
+                onClick={() =>
+                  updatePlayer(p.id, { lives: Math.max(0, p.lives - 1) })
+                }
               >
-                Entfernen
+                - Leben
+              </button>
+
+              <button
+                style={{ background: "#06b6d4", color: "white" }}
+                onClick={() => updatePlayer(p.id, { votes: p.votes + 1 })}
+              >
+                + Vote
+              </button>
+
+              <button
+                style={{ background: "#374151", color: "white" }}
+                onClick={() =>
+                  updatePlayer(p.id, { votes: Math.max(0, p.votes - 1) })
+                }
+              >
+                - Vote
               </button>
             </div>
-          ))}
-        </div>
-      )}
+
+            <button
+              style={{
+                width: "100%",
+                background: p.active ? "#00ff95" : "#7c3aed",
+                color: "white",
+                marginBottom: 8,
+              }}
+              onClick={() => updatePlayer(p.id, { active: !p.active })}
+            >
+              {p.active ? "Aktiv" : "Aktiv markieren"}
+            </button>
+
+            <button
+              style={{
+                width: "100%",
+                background: "#dc2626",
+                color: "white",
+              }}
+              onClick={() => removePlayer(p.id)}
+            >
+              Spieler rausschmeißen
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+)}
 
       {mode === "show" && (
         <div
@@ -471,11 +502,11 @@ export default function Page() {
 {(mode === "show" || mode === "host") && data.hostCam && (
   <div
     className="cam active"
-    style={{
-      left: 20,
-      top: 20,
-      zIndex: 999,
-    }}
+style={{
+left: 20,
+top: 20,
+  zIndex: 999,
+}}
   >
     <iframe
       src={data.hostCam}
@@ -483,13 +514,9 @@ export default function Page() {
       allow="camera; microphone; fullscreen; autoplay"
     />
 
-    <div className="bottom host-bottom">
-      <div style={{ fontSize: 30, fontWeight: 900, color: "white" }}>
-        Host
-      </div>
-
-      <div style={{ fontSize: 20, fontWeight: 800, color: "white" }}>
-        ❤️❤️❤️ · 0 Votes · Host
+    <div className="bottom">
+      <div style={{ fontSize: 38, fontWeight: 900, color: "white" }}>
+        Zaichiima(Host)
       </div>
     </div>
   </div>
