@@ -1,6 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+useEffect(() => {
+  if (!data.timerRunning || data.timer <= 0) return;
+
+  const interval = setInterval(async () => {
+    await save({
+      ...data,
+      timer: Math.max(0, data.timer - 1),
+    });
+  }, 1000);
+
+  return () => clearInterval(interval);
+}, [data.timerRunning, data.timer]);
 import { initializeApp, getApps } from "firebase/app";
 import {
   getFirestore,
@@ -28,7 +40,9 @@ const roomRef = doc(db, "streamOverlay", "main");
 
 const defaultState = {
   players: [],
-  timer: "01:13",
+  timer: 60,
+  timerSeconds: 60,
+  timerRunning: false,
   hostCam: "",
 };
 
@@ -184,17 +198,45 @@ window.location.href = "/?show=1";
                 + Spieler hinzufügen
               </button>
 
-              <label>Timer</label>
-              <input
-                value={data.timer}
-                onChange={(e) =>
-                  save({
-                    ...data,
-                    timer: e.target.value,
-                  })
-                }
-                style={inputStyle}
-              />
+<label>Timer Sekunden</label>
+<input
+  type="number"
+  value={data.timerSeconds || 60}
+  onChange={(e) =>
+    save({
+      ...data,
+      timerSeconds: Number(e.target.value),
+      timer: Number(e.target.value),
+      timerRunning: false,
+    })
+  }
+  style={inputStyle}
+/>
+
+<button
+  style={buttonPink}
+  onClick={() =>
+    save({
+      ...data,
+      timer: data.timerSeconds || 60,
+      timerRunning: true,
+    })
+  }
+>
+  Timer starten / reaktivieren
+</button>
+
+<button
+  style={{ ...buttonGray, marginTop: 8 }}
+  onClick={() =>
+    save({
+      ...data,
+      timerRunning: false,
+    })
+  }
+>
+  Timer stoppen
+</button>
 
               <label>Zaichiima</label>
               {data.hostCam && (
@@ -486,7 +528,8 @@ window.location.href = "/?show=1";
               zIndex: 9999,
             }}
           >
-            {data.timer}
+          {Math.floor((data.timer || 0) / 60)}:
+{String((data.timer || 0) % 60).padStart(2, "0")}
           </div>
 
           {data.hostCam && (
