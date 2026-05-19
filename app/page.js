@@ -172,8 +172,8 @@ export default function Page() {
           height: 330px;
           border-radius: 22px;
           overflow: hidden;
-          border: 3px solid rgba(255,255,255,0.08);
-          background: rgba(0,0,0,0.25);
+          border: none;
+          background: transparent;
         }
 
         .active {
@@ -450,7 +450,7 @@ export default function Page() {
 
             <div className="bottom">
               <div style={{ fontSize: 38, fontWeight: 900, color: "white" }}>
-                /{p.name}
+                {p.name}
               </div>
 
               <div
