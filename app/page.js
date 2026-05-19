@@ -135,7 +135,7 @@ export default function Page() {
       players: [...data.players, player],
     });
 
-    alert("Erfolgreich gejoint");
+window.location.href = "/?show=1";
   }
 
   return (
