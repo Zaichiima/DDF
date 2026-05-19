@@ -112,6 +112,7 @@ export default function Page() {
     setMyId(id);
 
     await save({ ...data, players: newPlayers });
+    window.location.href = "/?show=1";
   }
 
   async function addPlayer() {
