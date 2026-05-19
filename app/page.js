@@ -473,8 +473,8 @@ export default function Page() {
   <div
     className="cam active"
 style={{
-  left: 1300,
-  top: 740,
+left: 20,
+top: 20,
   zIndex: 999,
 }}
   >
@@ -486,7 +486,7 @@ style={{
 
     <div className="bottom">
       <div style={{ fontSize: 38, fontWeight: 900, color: "white" }}>
-        Host
+        Zaichiima
       </div>
     </div>
   </div>
