@@ -197,6 +197,20 @@ window.location.href = "/?show=1";
               />
 
               <label>Zaichiima</label>
+              {data.hostCam && (
+  <iframe
+    src={data.hostCam}
+    allow="camera; microphone; fullscreen; autoplay"
+    style={{
+      width: "100%",
+      aspectRatio: "16/9",
+      borderRadius: 18,
+      marginTop: 12,
+      border: "2px solid rgba(255,255,255,.08)",
+      background: "#000",
+    }}
+  />
+)}
               <input
                 value={data.hostCam || ""}
                 onChange={(e) =>
