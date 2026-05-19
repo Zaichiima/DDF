@@ -300,6 +300,19 @@ export default function Page() {
           >
             + Spieler manuell hinzufügen
           </button>
+          <button
+  onClick={() => save({ ...data, players: [] })}
+  style={{
+    width: "100%",
+    background: "#dc2626",
+    color: "white",
+    marginBottom: 16,
+    padding: 16,
+    fontSize: 18,
+  }}
+>
+  Alle Spieler löschen
+</button>
 
           <label>Timer</label>
           <input
