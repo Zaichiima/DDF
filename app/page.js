@@ -189,16 +189,6 @@ window.location.href = "/?show=1";
     >
       {mode === "host" && (
         <section style={{ padding: 28, color: "white" }}>
-          <h1
-            style={{
-              fontSize: 52,
-              fontWeight: 900,
-              marginBottom: 20,
-            }}
-          >
-            Host Control Panel
-          </h1>
-
           <div
             style={{
               display: "grid",
