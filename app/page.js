@@ -263,6 +263,22 @@ window.location.href = "/?show=1";
 >
   Reset
 </button>
+<div
+  style={{
+    marginTop: 12,
+    padding: 16,
+    borderRadius: 18,
+    background: "rgba(0,0,0,0.45)",
+    border: "1px solid rgba(255,255,255,.12)",
+    textAlign: "center",
+    fontSize: 42,
+    fontWeight: 900,
+    color: data.timerRunning ? "#00ff95" : "white",
+  }}
+>
+  {Math.floor(Number(data.timer || 0) / 60)}:
+  {String(Number(data.timer || 0) % 60).padStart(2, "0")}
+</div>
 
               <label>Zaichiima</label>
               {data.hostCam && (
