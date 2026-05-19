@@ -69,17 +69,22 @@ export default function Page() {
     return () => unsub();
   }, []);
 useEffect(() => {
-  if (!data.timerRunning || data.timer <= 0) return;
+  if (mode !== "host") return;
+  if (!data.timerRunning) return;
+  if ((data.timer || 0) <= 0) return;
 
   const interval = setInterval(async () => {
+    const newTimer = Math.max(0, (data.timer || 0) - 1);
+
     await save({
       ...data,
-      timer: Math.max(0, data.timer - 1),
+      timer: newTimer,
+      timerRunning: newTimer > 0,
     });
   }, 1000);
 
   return () => clearInterval(interval);
-}, [data.timerRunning, data.timer]);
+}, [mode, data.timerRunning, data.timer]);
   async function save(newData) {
     setData(newData);
     await setDoc(roomRef, newData);
