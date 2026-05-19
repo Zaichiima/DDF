@@ -607,38 +607,6 @@ window.location.href = "/?show=1";
               id="join-cam"
               style={inputStyle}
             />
-            <label>Fragen Kategorie</label>
-<select
-  value={data.questionCategory || "Alle"}
-  onChange={(e) =>
-    save({
-      ...data,
-      questionCategory: e.target.value,
-    })
-  }
-  style={inputStyle}
->
-  <option>Alle</option>
-  <option>Gaming</option>
-  <option>Anime</option>
-  <option>Filme</option>
-  <option>Allgemein</option>
-  <option>Schätzen</option>
-  <option>Mathe</option>
-  <option>Geografie</option>
-  <option>Internet</option>
-  <option>Memes</option>
-</select>
-
-<button
-  onClick={randomQuestion}
-  style={{
-    ...buttonPink,
-    marginTop: 10,
-  }}
->
-  🎲 Random Frage
-</button>
             <button
               style={{
                 ...buttonPink,
