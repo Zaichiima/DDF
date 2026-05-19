@@ -24,7 +24,6 @@ const defaultState = {
 };
 
 const positions = [
-  { x: 20, y: 20 },
   { x: 660, y: 20 },
   { x: 1300, y: 20 },
   { x: 20, y: 380 },
@@ -472,11 +471,11 @@ export default function Page() {
 {(mode === "show" || mode === "host") && data.hostCam && (
   <div
     className="cam active"
-style={{
-left: 20,
-top: 20,
-  zIndex: 999,
-}}
+    style={{
+      left: 20,
+      top: 20,
+      zIndex: 999,
+    }}
   >
     <iframe
       src={data.hostCam}
@@ -484,9 +483,13 @@ top: 20,
       allow="camera; microphone; fullscreen; autoplay"
     />
 
-    <div className="bottom">
-      <div style={{ fontSize: 38, fontWeight: 900, color: "white" }}>
-        Zaichiima
+    <div className="bottom host-bottom">
+      <div style={{ fontSize: 30, fontWeight: 900, color: "white" }}>
+        Host
+      </div>
+
+      <div style={{ fontSize: 20, fontWeight: 800, color: "white" }}>
+        ❤️❤️❤️ · 0 Votes · Host
       </div>
     </div>
   </div>
