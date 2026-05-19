@@ -337,7 +337,7 @@ export default function Page() {
 }}
           />
 
-          <label>https://vdo.ninja/?view=vK8CgSc</label>
+          <label>Zaichiima</label>
           <input
             value={data.hostCam}
             onChange={(e) => save({ ...data, hostCam: e.target.value })}
@@ -472,10 +472,11 @@ export default function Page() {
 {(mode === "show" || mode === "host") && data.hostCam && (
   <div
     className="cam active"
-    style={{
-      left: 20,
-      top: 20,
-    }}
+style={{
+  left: 1300,
+  top: 740,
+  zIndex: 999,
+}}
   >
     <iframe
       src={data.hostCam}
