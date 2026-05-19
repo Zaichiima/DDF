@@ -1,5 +1,5 @@
 "use client";
-
+import { QUESTIONS } from "./questions";
 import { useEffect, useState } from "react";
 import { initializeApp, getApps } from "firebase/app";
 import {
