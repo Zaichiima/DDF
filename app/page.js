@@ -187,14 +187,14 @@ export default function Page() {
           border: 0;
         }
 
-        .bottom {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          padding: 18px;
-          background: linear-gradient(to top, rgba(0,0,0,.95), rgba(0,0,0,.1));
-        }
+.bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 18px;
+  background: transparent;
+}
 
         .panel {
           position: fixed;
