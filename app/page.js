@@ -112,7 +112,6 @@ export default function Page() {
     setMyId(id);
 
     await save({ ...data, players: newPlayers });
-    window.location.href = "/?show=1";
   }
 
   async function addPlayer() {
@@ -464,7 +463,7 @@ export default function Page() {
         </div>
       )}
 
-      {mode === "show" && (
+{(mode === "show" || mode === "join") && (
         <div
           style={{
             position: "absolute",
@@ -481,7 +480,7 @@ export default function Page() {
           {data.timer}
         </div>
       )}
-{(mode === "show" || mode === "host") && data.hostCam && (
+{(mode === "show" || mode === "join") && data.hostCam && (
   <div
     className="cam active"
 style={{
@@ -503,7 +502,7 @@ top: 20,
     </div>
   </div>
 )}
-      {(mode === "show" || mode === "host") &&
+{(mode === "show" || mode === "join") &&
         data.players.map((p) => (
           <div
             key={p.id}
