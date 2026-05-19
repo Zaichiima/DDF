@@ -20,6 +20,7 @@ const roomRef = doc(db, "streamOverlay", "main");
 const defaultState = {
   players: [],
   timer: "01:13",
+  hostCam: "",
 };
 
 const positions = [
@@ -336,6 +337,17 @@ export default function Page() {
 }}
           />
 
+          <label>https://vdo.ninja/?view=vK8CgSc</label>
+          <input
+            value={data.hostCam}
+            onChange={(e) => save({ ...data, hostCam: e.target.value })}
+            style={{
+  color: "white",
+  background: "#111",
+  border: "1px solid #333",
+}}
+          />
+
           {data.players.map((p, i) => (
             <div
               key={p.id}
@@ -457,7 +469,27 @@ export default function Page() {
           {data.timer}
         </div>
       )}
+{(mode === "show" || mode === "host") && data.hostCam && (
+  <div
+    className="cam active"
+    style={{
+      left: 20,
+      top: 20,
+    }}
+  >
+    <iframe
+      src={data.hostCam}
+      className="video"
+      allow="camera; microphone; fullscreen; autoplay"
+    />
 
+    <div className="bottom">
+      <div style={{ fontSize: 38, fontWeight: 900, color: "white" }}>
+        Host
+      </div>
+    </div>
+  </div>
+)}
       {(mode === "show" || mode === "host") &&
         data.players.map((p) => (
           <div
