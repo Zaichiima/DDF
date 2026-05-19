@@ -14,26 +14,28 @@ const firebaseConfig = {
 };
 
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+
 const db = getFirestore(app);
 
 const roomRef = doc(db, "streamOverlay", "main");
 
 const defaultState = {
   players: [],
+  timer: "01:13",
 };
 
-const gridPositions = [
+const positions = [
   { x: 20, y: 20 },
-  { x: 560, y: 20 },
-  { x: 1100, y: 20 },
+  { x: 660, y: 20 },
+  { x: 1300, y: 20 },
 
-  { x: 20, y: 330 },
-  { x: 560, y: 330 },
-  { x: 1100, y: 330 },
+  { x: 20, y: 380 },
+  { x: 660, y: 380 },
+  { x: 1300, y: 380 },
 
-  { x: 20, y: 640 },
-  { x: 560, y: 640 },
-  { x: 1100, y: 640 },
+  { x: 20, y: 740 },
+  { x: 660, y: 740 },
+  { x: 1300, y: 740 },
 ];
 
 export default function Page() {
@@ -66,15 +68,18 @@ export default function Page() {
   }
 
   async function addPlayer() {
-    const pos = gridPositions[data.players.length] || { x: 20, y: 20 };
+    const pos = positions[data.players.length] || {
+      x: 20,
+      y: 20,
+    };
 
     const player = {
       id: crypto.randomUUID(),
       name: "Spieler",
-      lives: 3,
       votes: 0,
-      status: "Waiting",
+      lives: 3,
       active: false,
+      status: "Waiting",
       avatar:
         "https://cdn-icons-png.flaticon.com/512/149/149071.png",
       x: pos.x,
@@ -82,12 +87,14 @@ export default function Page() {
     };
 
     await save({
+      ...data,
       players: [...data.players, player],
     });
   }
 
   async function updatePlayer(id, changes) {
     await save({
+      ...data,
       players: data.players.map((p) =>
         p.id === id ? { ...p, ...changes } : p
       ),
@@ -96,71 +103,79 @@ export default function Page() {
 
   async function removePlayer(id) {
     await save({
+      ...data,
       players: data.players.filter((p) => p.id !== id),
     });
   }
 
   return (
     <main
-      className={`min-h-screen ${
-        mode === "host" ? "bg-[#0b0b16]" : "bg-transparent"
-      } text-white`}
+      className={`min-h-screen overflow-hidden ${
+        mode === "host"
+          ? "bg-[#070711]"
+          : "bg-transparent"
+      }`}
     >
       <style jsx global>{`
         body {
           margin: 0;
           overflow: hidden;
-          background: ${mode === "show" ? "transparent" : "#0b0b16"};
+          background: ${
+            mode === "show"
+              ? "transparent"
+              : "#070711"
+          };
           font-family: Arial, Helvetica, sans-serif;
         }
 
-        .player-card {
+        .cam {
           position: absolute;
-          width: 500px;
-          height: 280px;
-          border-radius: 18px;
+          width: 620px;
+          height: 330px;
+          border-radius: 22px;
           overflow: hidden;
-          border: 3px solid rgba(255,255,255,0.1);
+          border: 3px solid rgba(255,255,255,0.08);
           background: rgba(0,0,0,0.2);
+          backdrop-filter: blur(10px);
         }
 
         .active {
-          border: 3px solid #00ff88;
-          box-shadow: 0 0 30px #00ff8860;
+          border: 3px solid #00ff95;
+          box-shadow: 0 0 40px #00ff9540;
         }
 
-        .overlay-bottom {
+        .bottom {
           position: absolute;
           bottom: 0;
           left: 0;
           right: 0;
-          padding: 14px;
+          padding: 18px;
           background: linear-gradient(
             to top,
-            rgba(0,0,0,.9),
-            rgba(0,0,0,.2)
+            rgba(0,0,0,.95),
+            rgba(0,0,0,.15)
           );
         }
 
-        .host-panel {
+        .panel {
           position: fixed;
-          top: 20px;
           right: 20px;
+          top: 20px;
           width: 380px;
-          height: 90vh;
+          height: 92vh;
           overflow-y: auto;
-          background: #121226;
+          border-radius: 24px;
+          background: #111122;
           border: 1px solid rgba(255,255,255,.1);
-          border-radius: 20px;
-          padding: 16px;
-          z-index: 9999;
+          padding: 18px;
+          z-index: 99999;
         }
 
         input,
         select {
           width: 100%;
           padding: 10px;
-          border-radius: 10px;
+          border-radius: 12px;
           border: none;
           margin-top: 6px;
           margin-bottom: 10px;
@@ -169,36 +184,105 @@ export default function Page() {
 
         button {
           border: none;
-          border-radius: 12px;
+          border-radius: 14px;
           padding: 10px 14px;
           font-weight: 900;
           cursor: pointer;
         }
       `}</style>
 
+      {mode === "show" && (
+        <div
+          style={{
+            position: "absolute",
+            top: 20,
+            left: 20,
+            background: "rgba(0,0,0,.7)",
+            color: "white",
+            padding: "10px 14px",
+            borderRadius: 14,
+            fontWeight: 900,
+            fontSize: 38,
+            backdropFilter: "blur(10px)",
+          }}
+        >
+          {data.timer}
+        </div>
+      )}
+
       {mode === "host" && (
-        <div className="host-panel">
-          <h1 className="text-3xl font-black mb-4">
+        <div className="panel">
+          <h1
+            style={{
+              fontSize: 44,
+              fontWeight: 900,
+              marginBottom: 18,
+              color: "white",
+            }}
+          >
             Stream Overlay
           </h1>
 
           <button
             onClick={addPlayer}
-            className="bg-purple-600 text-white w-full mb-5"
+            style={{
+              width: "100%",
+              background:
+                "linear-gradient(135deg,#a855f7,#ec4899)",
+              color: "white",
+              marginBottom: 20,
+              padding: 16,
+              fontSize: 20,
+            }}
           >
             + Spieler hinzufügen
           </button>
 
-          {data.players.map((p, index) => (
+          <label
+            style={{
+              color: "white",
+              fontWeight: 800,
+            }}
+          >
+            Timer
+          </label>
+
+          <input
+            value={data.timer}
+            onChange={(e) =>
+              save({
+                ...data,
+                timer: e.target.value,
+              })
+            }
+          />
+
+          {data.players.map((p, i) => (
             <div
               key={p.id}
-              className="bg-black/40 rounded-2xl p-4 mb-4"
+              style={{
+                background: "#0b0b1a",
+                padding: 16,
+                borderRadius: 20,
+                marginTop: 16,
+                border:
+                  "1px solid rgba(255,255,255,.08)",
+              }}
             >
-              <h2 className="font-black text-xl mb-2">
-                Spieler {index + 1}
+              <h2
+                style={{
+                  color: "white",
+                  fontSize: 28,
+                  fontWeight: 900,
+                }}
+              >
+                Spieler {i + 1}
               </h2>
 
-              <label>Name</label>
+              <label style={{ color: "white" }}>
+                Name
+              </label>
+
               <input
                 value={p.name}
                 onChange={(e) =>
@@ -208,7 +292,10 @@ export default function Page() {
                 }
               />
 
-              <label>Avatar URL</label>
+              <label style={{ color: "white" }}>
+                Avatar URL
+              </label>
+
               <input
                 value={p.avatar}
                 onChange={(e) =>
@@ -218,7 +305,10 @@ export default function Page() {
                 }
               />
 
-              <label>Status</label>
+              <label style={{ color: "white" }}>
+                Status
+              </label>
+
               <select
                 value={p.status}
                 onChange={(e) =>
@@ -228,15 +318,25 @@ export default function Page() {
                 }
               >
                 <option>Waiting</option>
+                <option>Talking</option>
                 <option>Thinking</option>
                 <option>Answering</option>
                 <option>AFK</option>
                 <option>Out</option>
               </select>
 
-              <div className="flex gap-2 mb-2">
+              <div
+                style={{
+                  display: "flex",
+                  gap: 10,
+                  marginBottom: 10,
+                }}
+              >
                 <button
-                  className="bg-pink-600 text-white"
+                  style={{
+                    background: "#ec4899",
+                    color: "white",
+                  }}
                   onClick={() =>
                     updatePlayer(p.id, {
                       lives: p.lives + 1,
@@ -247,10 +347,16 @@ export default function Page() {
                 </button>
 
                 <button
-                  className="bg-gray-700 text-white"
+                  style={{
+                    background: "#374151",
+                    color: "white",
+                  }}
                   onClick={() =>
                     updatePlayer(p.id, {
-                      lives: Math.max(0, p.lives - 1),
+                      lives: Math.max(
+                        0,
+                        p.lives - 1
+                      ),
                     })
                   }
                 >
@@ -258,9 +364,18 @@ export default function Page() {
                 </button>
               </div>
 
-              <div className="flex gap-2 mb-2">
+              <div
+                style={{
+                  display: "flex",
+                  gap: 10,
+                  marginBottom: 10,
+                }}
+              >
                 <button
-                  className="bg-cyan-600 text-white"
+                  style={{
+                    background: "#06b6d4",
+                    color: "white",
+                  }}
                   onClick={() =>
                     updatePlayer(p.id, {
                       votes: p.votes + 1,
@@ -271,10 +386,16 @@ export default function Page() {
                 </button>
 
                 <button
-                  className="bg-gray-700 text-white"
+                  style={{
+                    background: "#374151",
+                    color: "white",
+                  }}
                   onClick={() =>
                     updatePlayer(p.id, {
-                      votes: Math.max(0, p.votes - 1),
+                      votes: Math.max(
+                        0,
+                        p.votes - 1
+                      ),
                     })
                   }
                 >
@@ -283,11 +404,14 @@ export default function Page() {
               </div>
 
               <button
-                className={`w-full ${
-                  p.active
-                    ? "bg-green-500"
-                    : "bg-gray-700"
-                }`}
+                style={{
+                  width: "100%",
+                  background: p.active
+                    ? "#00ff95"
+                    : "#374151",
+                  color: "white",
+                  marginBottom: 10,
+                }}
                 onClick={() =>
                   updatePlayer(p.id, {
                     active: !p.active,
@@ -300,8 +424,14 @@ export default function Page() {
               </button>
 
               <button
-                className="w-full bg-red-600 text-white mt-2"
-                onClick={() => removePlayer(p.id)}
+                style={{
+                  width: "100%",
+                  background: "#dc2626",
+                  color: "white",
+                }}
+                onClick={() =>
+                  removePlayer(p.id)
+                }
               >
                 Entfernen
               </button>
@@ -313,7 +443,7 @@ export default function Page() {
       {data.players.map((p) => (
         <div
           key={p.id}
-          className={`player-card ${
+          className={`cam ${
             p.active ? "active" : ""
           }`}
           style={{
@@ -321,30 +451,56 @@ export default function Page() {
             top: p.y,
           }}
         >
-          <div className="w-full h-full bg-black/20 relative">
-            <div className="overlay-bottom">
-              <div className="flex items-center gap-3">
-                <img
-                  src={p.avatar}
-                  className="w-10 h-10 rounded-full border-2 border-white"
-                />
+          <div className="bottom">
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 14,
+              }}
+            >
+              <img
+                src={p.avatar}
+                style={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: "100%",
+                  border:
+                    "2px solid rgba(255,255,255,.8)",
+                }}
+              />
 
-                <div>
-                  <div className="text-3xl font-black">
-                    /{p.name}
-                  </div>
+              <div>
+                <div
+                  style={{
+                    fontSize: 38,
+                    fontWeight: 900,
+                    color: "white",
+                    lineHeight: 1,
+                  }}
+                >
+                  /{p.name}
+                </div>
 
-                  <div className="flex items-center gap-3 text-lg">
-                    <span>
-                      {"❤️".repeat(p.lives)}
-                    </span>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 18,
+                    marginTop: 8,
+                    color: "white",
+                    fontSize: 24,
+                    fontWeight: 700,
+                  }}
+                >
+                  <span>
+                    {"❤️".repeat(p.lives)}
+                  </span>
 
-                    <span>{p.status}</span>
+                  <span>{p.status}</span>
 
-                    <span>
-                      {p.votes} Votes
-                    </span>
-                  </div>
+                  <span>
+                    {p.votes} Votes
+                  </span>
                 </div>
               </div>
             </div>
