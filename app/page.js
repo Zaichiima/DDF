@@ -21,11 +21,12 @@ const firebaseConfig = {
 
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const roomRef = doc(db, "duemmsteFliegt", "mainRoom");
+
+const roomRef = doc(db, "quizRooms", "main");
 
 const QUESTIONS = [
   {
-    q: "Welche Farbe bekommt man, wenn man Blau und Gelb mischt?",
+    q: "Welche Farbe bekommt man aus Blau und Gelb?",
     a: ["Rot", "Grün", "Lila", "Orange"],
     correct: 1,
   },
@@ -35,54 +36,56 @@ const QUESTIONS = [
     correct: 1,
   },
   {
-    q: "Wie heißt der bekannte Klempner von Nintendo?",
-    a: ["Sonic", "Mario", "Link", "Kirby"],
-    correct: 1,
-  },
-  {
     q: "Was ist 9 x 7?",
     a: ["56", "63", "72", "81"],
     correct: 1,
   },
   {
     q: "Welches Land hat einen roten Kreis auf weißem Hintergrund?",
-    a: ["China", "Japan", "Korea", "Thailand"],
+    a: ["China", "Japan", "Thailand", "Korea"],
     correct: 1,
   },
 ];
 
 const DEFAULT_STATE = {
   phase: "lobby",
-  round: 1,
-  questionIndex: 0,
   currentQuestion: null,
   revealAnswer: false,
   timer: 20,
   timerRunning: false,
-  players: {},
+  questionIndex: 0,
   answers: {},
   eliminatedText: "",
+  players: {},
 };
 
 export default function Page() {
   const [game, setGame] = useState(DEFAULT_STATE);
+
   const [mode, setMode] = useState("show");
+
   const [name, setName] = useState("");
   const [cam, setCam] = useState("");
+
   const [playerId, setPlayerId] = useState("");
-  const [hostPass, setHostPass] = useState("");
+
   const [hostUnlocked, setHostUnlocked] = useState(false);
+  const [hostPassword, setHostPassword] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
 
-    if (params.get("join") === "1") setMode("join");
-    else if (params.get("host") === "1") setMode("hostLogin");
-    else setMode("show");
+    if (params.get("join") === "1") {
+      setMode("join");
+    } else if (params.get("host") === "1") {
+      setMode("hostLogin");
+    } else {
+      setMode("show");
+    }
 
-    const savedId = localStorage.getItem("ddf_playerId");
-    const savedName = localStorage.getItem("ddf_name");
-    const savedCam = localStorage.getItem("ddf_cam");
+    const savedId = localStorage.getItem("playerId");
+    const savedName = localStorage.getItem("playerName");
+    const savedCam = localStorage.getItem("playerCam");
 
     if (savedId) setPlayerId(savedId);
     if (savedName) setName(savedName);
@@ -106,30 +109,27 @@ export default function Page() {
 
     const interval = setInterval(async () => {
       await updateDoc(roomRef, {
-        timer: Math.max((game.timer || 0) - 1, 0),
+        timer: Math.max(game.timer - 1, 0),
       });
     }, 1000);
 
     return () => clearInterval(interval);
   }, [game.timerRunning, game.timer]);
 
-  const players = useMemo(() => Object.values(game.players || {}), [game.players]);
-  const alivePlayers = players.filter((p) => !p.eliminated);
+  const players = useMemo(() => {
+    return Object.values(game.players || {});
+  }, [game.players]);
+
   const me = game.players?.[playerId];
 
-  function cleanVdoLink(url) {
-    if (!url) return "";
-    return url.includes("vdo.ninja") ? url : "";
-  }
-
   async function joinGame() {
-    if (!name.trim()) return alert("Bitte Namen eingeben");
+    if (!name.trim()) return;
 
     const id = playerId || crypto.randomUUID();
 
-    localStorage.setItem("ddf_playerId", id);
-    localStorage.setItem("ddf_name", name);
-    localStorage.setItem("ddf_cam", cam);
+    localStorage.setItem("playerId", id);
+    localStorage.setItem("playerName", name);
+    localStorage.setItem("playerCam", cam);
 
     setPlayerId(id);
 
@@ -141,9 +141,9 @@ export default function Page() {
           [id]: {
             id,
             name,
-            cam: cleanVdoLink(cam),
-            lives: 3,
+            cam,
             score: 0,
+            lives: 3,
             eliminated: false,
           },
         },
@@ -156,12 +156,12 @@ export default function Page() {
     const q = QUESTIONS[game.questionIndex % QUESTIONS.length];
 
     await updateDoc(roomRef, {
-      phase: "question",
       currentQuestion: q,
-      revealAnswer: false,
-      answers: {},
       timer: 20,
       timerRunning: true,
+      revealAnswer: false,
+      answers: {},
+      phase: "question",
       eliminatedText: "",
     });
   }
@@ -176,19 +176,19 @@ export default function Page() {
   async function nextQuestion() {
     await updateDoc(roomRef, {
       questionIndex: game.questionIndex + 1,
-      round: game.round + 1,
-      phase: "lobby",
       currentQuestion: null,
       revealAnswer: false,
-      answers: {},
       timer: 20,
       timerRunning: false,
+      answers: {},
+      phase: "lobby",
       eliminatedText: "",
     });
   }
 
-  async function answerQuestion(index) {
-    if (!playerId || game.answers?.[playerId] !== undefined) return;
+  async function answer(index) {
+    if (!playerId) return;
+    if (game.answers?.[playerId] !== undefined) return;
 
     await setDoc(
       roomRef,
@@ -202,66 +202,68 @@ export default function Page() {
     );
   }
 
-  async function evaluateAnswers() {
+  async function evaluate() {
     const updatedPlayers = { ...game.players };
-    const eliminatedNames = [];
+
+    const eliminated = [];
 
     Object.values(updatedPlayers).forEach((p) => {
       if (p.eliminated) return;
 
       const answer = game.answers?.[p.id];
 
-      if (answer === game.currentQuestion?.correct) {
+      if (answer === game.currentQuestion.correct) {
         p.score += 100;
       } else {
         p.lives -= 1;
       }
 
       if (p.lives <= 0) {
-        p.eliminated = true;
         p.lives = 0;
-        eliminatedNames.push(p.name);
+        p.eliminated = true;
+        eliminated.push(p.name);
       }
     });
 
     await updateDoc(roomRef, {
       players: updatedPlayers,
-      phase: "result",
       revealAnswer: true,
       timerRunning: false,
-      eliminatedText: eliminatedNames.length
-        ? `${eliminatedNames.join(", ")} fliegt raus!`
+      phase: "result",
+      eliminatedText: eliminated.length
+        ? `${eliminated.join(", ")} fliegt raus!`
         : "",
     });
   }
 
-  async function changeLives(id, amount) {
+  async function addLife(id) {
     const updatedPlayers = { ...game.players };
-    updatedPlayers[id].lives += amount;
+
+    updatedPlayers[id].lives += 1;
+    updatedPlayers[id].eliminated = false;
+
+    await updateDoc(roomRef, {
+      players: updatedPlayers,
+    });
+  }
+
+  async function removeLife(id) {
+    const updatedPlayers = { ...game.players };
+
+    updatedPlayers[id].lives -= 1;
 
     if (updatedPlayers[id].lives <= 0) {
       updatedPlayers[id].lives = 0;
       updatedPlayers[id].eliminated = true;
-    } else {
-      updatedPlayers[id].eliminated = false;
     }
 
-    await updateDoc(roomRef, { players: updatedPlayers });
-  }
-
-  async function kickPlayer(id) {
-    const updatedPlayers = { ...game.players };
-    updatedPlayers[id].lives = 0;
-    updatedPlayers[id].eliminated = true;
-    await updateDoc(roomRef, { players: updatedPlayers });
-  }
-
-  async function resetGame() {
-    await setDoc(roomRef, DEFAULT_STATE);
+    await updateDoc(roomRef, {
+      players: updatedPlayers,
+    });
   }
 
   function unlockHost() {
-    if (hostPass === "host123") {
+    if (hostPassword === "host123") {
       setHostUnlocked(true);
       setMode("host");
     } else {
@@ -270,42 +272,42 @@ export default function Page() {
   }
 
   return (
-    <main className="min-h-screen bg-[#070716] text-white">
+    <main className="min-h-screen bg-[#060611] text-white">
       <style jsx global>{`
         body {
           margin: 0;
-          background: #070716;
-          font-family: Arial, Helvetica, sans-serif;
+          background: #060611;
+          font-family: Arial;
         }
 
         .card {
-          background: linear-gradient(145deg, #17172f, #0f0f20);
-          border: 1px solid rgba(255,255,255,0.12);
+          background: linear-gradient(145deg, #181830, #10101f);
           border-radius: 24px;
           padding: 20px;
+          border: 1px solid rgba(255,255,255,0.1);
         }
 
         .btn {
           background: linear-gradient(135deg, #7c3aed, #ec4899);
+          border: none;
+          border-radius: 16px;
+          padding: 14px 22px;
           color: white;
           font-weight: 900;
-          padding: 14px 22px;
-          border-radius: 16px;
-          border: none;
         }
 
         .btn2 {
-          background: #23233d;
+          background: #262645;
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 14px;
+          padding: 12px 18px;
           color: white;
           font-weight: 800;
-          padding: 12px 18px;
-          border-radius: 14px;
-          border: 1px solid rgba(255,255,255,0.15);
         }
 
         .answer {
-          background: #191932;
-          border: 2px solid rgba(255,255,255,0.15);
+          background: #1b1b35;
+          border: 2px solid rgba(255,255,255,0.1);
           border-radius: 18px;
           padding: 18px;
           font-size: 22px;
@@ -317,7 +319,7 @@ export default function Page() {
         }
 
         .eliminated {
-          opacity: 0.35;
+          opacity: 0.3;
           filter: grayscale(1);
         }
 
@@ -329,14 +331,13 @@ export default function Page() {
       {mode === "show" && (
         <section className="max-w-7xl mx-auto p-6">
           <div className="text-center mb-8">
-            <h1 className="text-7xl font-black">DER DÜMMSTE FLIEGT</h1>
-            <p className="text-2xl text-purple-300">
-              Runde {game.round} · Noch {alivePlayers.length} Spieler
-            </p>
+            <h1 className="text-7xl font-black">
+              DER DÜMMSTE FLIEGT
+            </h1>
           </div>
 
           {game.eliminatedText && (
-            <div className="bg-red-700 text-center text-5xl font-black p-6 rounded-3xl mb-8 animate-pulse">
+            <div className="bg-red-700 text-center p-6 rounded-3xl text-5xl font-black mb-8 animate-pulse">
               {game.eliminatedText}
             </div>
           )}
@@ -344,22 +345,26 @@ export default function Page() {
           <div className="card text-center mb-8 min-h-[300px] flex flex-col justify-center">
             {game.currentQuestion ? (
               <>
-                <div className="text-8xl font-black mb-4">{game.timer}</div>
+                <div className="text-8xl font-black mb-4">
+                  {game.timer}
+                </div>
+
                 <h2 className="text-5xl font-black mb-8">
                   {game.currentQuestion.q}
                 </h2>
 
                 <div className="grid grid-cols-2 gap-4">
-                  {game.currentQuestion.a.map((answer, i) => (
+                  {game.currentQuestion.a.map((a, i) => (
                     <div
                       key={i}
                       className={`answer ${
-                        game.revealAnswer && i === game.currentQuestion.correct
+                        game.revealAnswer &&
+                        i === game.currentQuestion.correct
                           ? "correct"
                           : ""
                       }`}
                     >
-                      {answer}
+                      {a}
                     </div>
                   ))}
                 </div>
@@ -375,25 +380,38 @@ export default function Page() {
             {players.map((p) => (
               <div
                 key={p.id}
-                className={`card text-center ${p.eliminated ? "eliminated" : ""}`}
+                className={`card text-center ${
+                  p.eliminated ? "eliminated" : ""
+                }`}
               >
-                <div className="h-40 bg-black rounded-2xl overflow-hidden mb-3 flex items-center justify-center">
+                <div className="h-40 bg-black rounded-2xl overflow-hidden mb-3">
                   {p.cam ? (
                     <iframe
                       src={p.cam}
-                      allow="camera;microphone;fullscreen"
+                      allow="camera; microphone; fullscreen"
                       className="w-full h-full"
                     />
                   ) : (
-                    <span className="text-gray-500">Keine Cam</span>
+                    <div className="w-full h-full flex items-center justify-center text-gray-500">
+                      Keine Cam
+                    </div>
                   )}
                 </div>
 
                 <h3 className="text-2xl font-black">{p.name}</h3>
-                <p className="text-xl">{"❤️".repeat(Math.max(p.lives, 0))}</p>
-                <p className="text-purple-300 font-black">{p.score} Punkte</p>
+
+                <p className="text-xl">
+                  {"❤️".repeat(Math.max(p.lives, 0))}
+                </p>
+
+                <p className="text-purple-300 font-black">
+                  {p.score} Punkte
+                </p>
+
                 {p.eliminated && (
-                  <p className="text-red-500 text-2xl font-black">RAUS</p>
+                  <p className="text-red-500 text-2xl font-black mt-2">
+                    RAUS
+                  </p>
                 )}
               </div>
             ))}
@@ -418,12 +436,15 @@ export default function Page() {
 
               <input
                 className="w-full p-4 rounded-xl text-xl mb-4"
-                placeholder="VDO.Ninja Link einfügen"
+                placeholder="VDO.Ninja Link"
                 value={cam}
                 onChange={(e) => setCam(e.target.value)}
               />
 
-              <button className="btn w-full" onClick={joinGame}>
+              <button
+                className="btn w-full"
+                onClick={joinGame}
+              >
                 Beitreten
               </button>
             </>
@@ -431,9 +452,12 @@ export default function Page() {
 
           {me && (
             <div className="text-center">
-              <h2 className="text-4xl font-black">{me.name}</h2>
+              <h2 className="text-4xl font-black">
+                {me.name}
+              </h2>
+
               <p className="text-2xl mt-2">
-                Leben: {"❤️".repeat(Math.max(me.lives, 0))}
+                {"❤️".repeat(Math.max(me.lives, 0))}
               </p>
 
               {me.eliminated && (
@@ -444,19 +468,22 @@ export default function Page() {
 
               {game.currentQuestion && !me.eliminated && (
                 <div className="mt-8">
-                  <div className="text-7xl font-black mb-4">{game.timer}</div>
+                  <div className="text-7xl font-black mb-4">
+                    {game.timer}
+                  </div>
+
                   <h3 className="text-3xl font-black mb-6">
                     {game.currentQuestion.q}
                   </h3>
 
                   <div className="grid grid-cols-2 gap-4">
-                    {game.currentQuestion.a.map((answer, i) => (
+                    {game.currentQuestion.a.map((a, i) => (
                       <button
                         key={i}
                         className="answer"
-                        onClick={() => answerQuestion(i)}
+                        onClick={() => answer(i)}
                       >
-                        {answer}
+                        {a}
                       </button>
                     ))}
                   </div>
@@ -469,88 +496,108 @@ export default function Page() {
 
       {mode === "hostLogin" && (
         <section className="max-w-xl mx-auto p-6 mt-20 card text-center">
-          <h1 className="text-5xl font-black mb-6">Host Login</h1>
+          <h1 className="text-5xl font-black mb-6">
+            Host Login
+          </h1>
 
           <input
             className="w-full p-4 rounded-xl text-xl mb-4"
             placeholder="Host Passwort"
             type="password"
-            value={hostPass}
-            onChange={(e) => setHostPass(e.target.value)}
+            value={hostPassword}
+            onChange={(e) => setHostPassword(e.target.value)}
           />
 
-          <button className="btn w-full" onClick={unlockHost}>
+          <button
+            className="btn w-full"
+            onClick={unlockHost}
+          >
             Host öffnen
           </button>
 
-          <p className="text-gray-400 mt-4">Passwort: host123</p>
+          <p className="text-gray-400 mt-4">
+            Passwort: host123
+          </p>
         </section>
       )}
 
       {mode === "host" && hostUnlocked && (
         <section className="max-w-6xl mx-auto p-6">
-          <h1 className="text-6xl font-black mb-6">Host Panel</h1>
+          <h1 className="text-6xl font-black mb-6">
+            Host Panel
+          </h1>
 
           <div className="flex flex-wrap gap-3 mb-8">
             <button className="btn" onClick={startQuestion}>
               Frage starten
             </button>
+
             <button className="btn2" onClick={revealAnswer}>
               Antwort zeigen
             </button>
-            <button className="btn2" onClick={evaluateAnswers}>
+
+            <button className="btn2" onClick={evaluate}>
               Auswerten
             </button>
+
             <button className="btn2" onClick={nextQuestion}>
               Nächste Frage
-            </button>
-            <button className="btn2" onClick={resetGame}>
-              Reset
             </button>
           </div>
 
           <div className="card mb-8">
-            <h2 className="text-3xl font-black mb-3">Aktuelle Frage</h2>
+            <h2 className="text-3xl font-black mb-4">
+              Aktuelle Frage
+            </h2>
+
             <p className="text-2xl">
-              {game.currentQuestion?.q || "Keine Frage aktiv"}
+              {game.currentQuestion?.q || "Keine aktive Frage"}
             </p>
-            <p className="text-5xl font-black mt-4">Timer: {game.timer}</p>
+
+            <p className="text-5xl font-black mt-4">
+              Timer: {game.timer}
+            </p>
 
             {game.currentQuestion && (
               <p className="text-green-400 text-2xl font-black mt-4">
                 Richtige Antwort:{" "}
-                {game.currentQuestion.a[game.currentQuestion.correct]}
+                {
+                  game.currentQuestion.a[
+                    game.currentQuestion.correct
+                  ]
+                }
               </p>
             )}
           </div>
-
-          <h2 className="text-3xl font-black mb-4">Spieler</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {players.map((p) => (
               <div
                 key={p.id}
-                className={`card ${p.eliminated ? "eliminated" : ""}`}
+                className={`card ${
+                  p.eliminated ? "eliminated" : ""
+                }`}
               >
-                <h3 className="text-2xl font-black">{p.name}</h3>
+                <h3 className="text-2xl font-black">
+                  {p.name}
+                </h3>
+
                 <p>Leben: {p.lives}</p>
                 <p>Punkte: {p.score}</p>
-                <p>
-                  Antwort:{" "}
-                  {game.answers?.[p.id] !== undefined && game.currentQuestion
-                    ? game.currentQuestion.a[game.answers[p.id]]
-                    : "Noch keine"}
-                </p>
 
                 <div className="flex gap-2 mt-4 flex-wrap">
-                  <button className="btn2" onClick={() => changeLives(p.id, 1)}>
+                  <button
+                    className="btn2"
+                    onClick={() => addLife(p.id)}
+                  >
                     + Leben
                   </button>
-                  <button className="btn2" onClick={() => changeLives(p.id, -1)}>
+
+                  <button
+                    className="btn2"
+                    onClick={() => removeLife(p.id)}
+                  >
                     - Leben
-                  </button>
-                  <button className="btn2" onClick={() => kickPlayer(p.id)}>
-                    Raus
                   </button>
                 </div>
               </div>
