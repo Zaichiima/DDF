@@ -154,7 +154,7 @@ export default function Page() {
 
   return (
     <main
-      className={`min-h-screen overflow-hidden ${
+      className={`min-h-screen overflow-hidden bg-black ${
         mode === "host" || mode === "join" ? "bg-[#070711]" : "bg-transparent"
       }`}
     >
@@ -162,7 +162,7 @@ export default function Page() {
         body {
           margin: 0;
           overflow: hidden;
-          background: ${mode === "show" ? "transparent" : "#070711"};
+          background: #000;
           font-family: Arial, Helvetica, sans-serif;
         }
 
