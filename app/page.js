@@ -644,7 +644,7 @@ window.location.href = "/?show=1";
               padding: "10px 14px",
               borderRadius: 14,
               fontWeight: 900,
-              fontSize: 38,
+              fontSize: 24,
               zIndex: 9999,
             }}
           >
@@ -670,7 +670,7 @@ window.location.href = "/?show=1";
               <div className="bottom">
                 <div
                   style={{
-                    fontSize: 38,
+                    fontSize: 24,
                     fontWeight: 900,
                     color: "white",
                   }}
@@ -703,7 +703,7 @@ window.location.href = "/?show=1";
               <div className="bottom">
                 <div
                   style={{
-                    fontSize: 38,
+                    fontSize: 24,
                     fontWeight: 900,
                     color: "white",
                   }}
