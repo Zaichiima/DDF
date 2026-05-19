@@ -639,31 +639,6 @@ window.location.href = "/?show=1";
 >
   🎲 Random Frage
 </button>
-
-{data.currentQuestion && (
-  <div
-    style={{
-      marginTop: 14,
-      padding: 16,
-      borderRadius: 18,
-      background: "rgba(0,0,0,.45)",
-      border: "1px solid rgba(255,255,255,.12)",
-    }}
-  >
-    <div style={{ fontSize: 18, color: "#ec4899", fontWeight: 900 }}>
-      {data.currentQuestion.cat}
-    </div>
-
-    <div style={{ fontSize: 24, fontWeight: 900, marginTop: 8 }}>
-      {data.currentQuestion.q}
-    </div>
-
-    <div style={{ fontSize: 20, marginTop: 12, color: "#00ff95", fontWeight: 900 }}>
-      Antwort: {data.currentQuestion.a}
-    </div>
-  </div>
-)}
-
             <button
               style={{
                 ...buttonPink,
