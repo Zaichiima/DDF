@@ -162,6 +162,19 @@ useEffect(() => {
 
 window.location.href = "/?show=1";
   }
+  async function randomQuestion() {
+  const pool =
+    data.questionCategory && data.questionCategory !== "Alle"
+      ? QUESTIONS.filter((q) => q.cat === data.questionCategory)
+      : QUESTIONS;
+
+  const picked = pool[Math.floor(Math.random() * pool.length)];
+
+  await save({
+    ...data,
+    currentQuestion: picked,
+  });
+}
 
   return (
     <main
@@ -528,6 +541,62 @@ window.location.href = "/?show=1";
               id="join-cam"
               style={inputStyle}
             />
+            <label>Fragen Kategorie</label>
+<select
+  value={data.questionCategory || "Alle"}
+  onChange={(e) =>
+    save({
+      ...data,
+      questionCategory: e.target.value,
+    })
+  }
+  style={inputStyle}
+>
+  <option>Alle</option>
+  <option>Gaming</option>
+  <option>Anime</option>
+  <option>Filme</option>
+  <option>Allgemein</option>
+  <option>Schätzen</option>
+  <option>Mathe</option>
+  <option>Geografie</option>
+  <option>Internet</option>
+  <option>Memes</option>
+</select>
+
+<button
+  onClick={randomQuestion}
+  style={{
+    ...buttonPink,
+    marginTop: 10,
+  }}
+>
+  🎲 Random Frage
+</button>
+
+{data.currentQuestion && (
+  <div
+    style={{
+      marginTop: 14,
+      padding: 16,
+      borderRadius: 18,
+      background: "rgba(0,0,0,.45)",
+      border: "1px solid rgba(255,255,255,.12)",
+    }}
+  >
+    <div style={{ fontSize: 18, color: "#ec4899", fontWeight: 900 }}>
+      {data.currentQuestion.cat}
+    </div>
+
+    <div style={{ fontSize: 24, fontWeight: 900, marginTop: 8 }}>
+      {data.currentQuestion.q}
+    </div>
+
+    <div style={{ fontSize: 20, marginTop: 12, color: "#00ff95", fontWeight: 900 }}>
+      Antwort: {data.currentQuestion.a}
+    </div>
+  </div>
+)}
 
             <button
               style={{
