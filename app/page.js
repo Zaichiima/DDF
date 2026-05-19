@@ -7,6 +7,7 @@ import {
   doc,
   onSnapshot,
   setDoc,
+  updateDoc,
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -71,15 +72,21 @@ export default function Page() {
 useEffect(() => {
   if (mode !== "host") return;
   if (!data.timerRunning) return;
-  if ((data.timer || 0) <= 0) return;
 
   const interval = setInterval(async () => {
-    const newTimer = Math.max(0, (data.timer || 0) - 1);
+    const current = Number(data.timer || 0);
 
-    await save({
-      ...data,
-      timer: newTimer,
-      timerRunning: newTimer > 0,
+    if (current <= 0) {
+      await updateDoc(roomRef, {
+        timerRunning: false,
+        timer: 0,
+      });
+      return;
+    }
+
+    await updateDoc(roomRef, {
+      timer: current - 1,
+      timerRunning: current - 1 > 0,
     });
   }, 1000);
 
@@ -202,17 +209,60 @@ window.location.href = "/?show=1";
                 + Spieler hinzufügen
               </button>
 
-              <label>Timer</label>
-              <input
-                value={data.timer}
-                onChange={(e) =>
-                  save({
-                    ...data,
-                    timer: e.target.value,
-                  })
-                }
-                style={inputStyle}
-              />
+<label>Timer Sekunden</label>
+<input
+  type="number"
+  value={data.timerSeconds || 60}
+  onChange={(e) =>
+    save({
+      ...data,
+      timerSeconds: Number(e.target.value),
+      timer: Number(e.target.value),
+      timerRunning: false,
+    })
+  }
+  style={inputStyle}
+/>
+
+<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+  <button
+    style={buttonPink}
+    onClick={() =>
+      save({
+        ...data,
+        timer: Number(data.timerSeconds || 60),
+        timerRunning: true,
+      })
+    }
+  >
+    Start
+  </button>
+
+  <button
+    style={buttonGray}
+    onClick={() =>
+      save({
+        ...data,
+        timerRunning: false,
+      })
+    }
+  >
+    Stop
+  </button>
+</div>
+
+<button
+  style={{ ...buttonBlue, marginTop: 8 }}
+  onClick={() =>
+    save({
+      ...data,
+      timer: Number(data.timerSeconds || 60),
+      timerRunning: false,
+    })
+  }
+>
+  Reset
+</button>
 
               <label>Zaichiima</label>
               {data.hostCam && (
@@ -504,7 +554,8 @@ window.location.href = "/?show=1";
               zIndex: 9999,
             }}
           >
-            {data.timer}
+          {Math.floor(Number(data.timer || 0) / 60)}:
+{String(Number(data.timer || 0) % 60).padStart(2, "0")}
           </div>
 
           {data.hostCam && (
