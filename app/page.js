@@ -281,16 +281,7 @@ export default function Page() {
                     style={inputStyle}
                   />
 
-                  <label>VDO.Ninja Link</label>
-                  <input
-                    value={p.cam}
-                    onChange={(e) =>
-                      updatePlayer(p.id, {
-                        cam: e.target.value,
-                      })
-                    }
-                    style={inputStyle}
-                  />
+
 
                   <div
                     style={{
